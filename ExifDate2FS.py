@@ -13,7 +13,7 @@ def main():
     start_time = time.time()
     c = 0
     s = 0
-    supported = ('.jpg', '.jpeg', '.tiff', '.webp', '.heic')   
+    supported = ('.jpg', '.jpeg', '.tiff', '.webp', '.heic')
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', metavar='directory', type=str, help='Directory')
     parser.add_argument('-v', '--verbose', help='show every file processed', action='store_true')

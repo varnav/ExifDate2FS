@@ -15,8 +15,8 @@ install_requires = [
 ]
 
 setuptools.setup(
-    name="exifdate2fs", # Replace with your own username
-    version="0.6.1",
+    name="exifdate2fs",  # Replace with your own username
+    version="0.7.0",
     author="Evgeny Varnavskiy",
     author_email="varnavruz@gmail.com",
     description="This tool will recursively update file timestamps to information from EXIF tag DateTimeOriginal",
