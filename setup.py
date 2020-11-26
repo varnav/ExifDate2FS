@@ -1,0 +1,43 @@
+import setuptools
+import os
+import shutil
+
+if not os.path.exists('exifdate2fs'):
+    os.mkdir('exifdate2fs')
+shutil.copyfile('ExifDate2FS.py', 'exifdate2fs/__init__.py')
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+install_requires = [
+    'exifread>=2',
+    'win32-setctime ; platform_system=="Windows"'
+]
+
+setuptools.setup(
+    name="exifdate2fs", # Replace with your own username
+    version="0.6.1",
+    author="Evgeny Varnavskiy",
+    author_email="varnavruz@gmail.com",
+    description="This tool will recursively update file timestamps to information from EXIF tag DateTimeOriginal",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/varnav/ExifDate2FS",
+    keywords=["jpeg", "exif", "filesystem", "filetime"],
+    packages=setuptools.find_packages(),
+    install_requires=install_requires,
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Topic :: Utilities",
+        "Environment :: Console",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3 :: Only",
+    ],
+    python_requires='>=3.8',
+    entry_points={
+        "console_scripts": [
+            "exifdate2fs = exifdate2fs.__init__:main",
+        ]
+    }
+)
