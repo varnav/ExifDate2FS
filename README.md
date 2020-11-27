@@ -6,10 +6,10 @@ It will not modify files themselves, only filesystem timestamps. For Linux it wi
 
 ## Supported file formats (file extensions):
 
-* JPEG (.jpg/.jpeg)
-* TIFF
+* JPEG (.jpg .jpeg)
+* TIFF (.tif .tiff)
 * WebP
-* HEIF (.heic)
+* HEIC (.heic)
 
 Supports Windows, Linux, MacOS and probably other OSes.
 

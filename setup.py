@@ -28,14 +28,20 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=install_requires,
     classifiers=[
+        "Development Status :: 4 - Beta",
+        "Environment :: MacOS X",
+        "Environment :: Win32 (MS Windows)",
+        "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Image Processing",
         "Topic :: Utilities",
+        "Topic :: Multimedia :: Graphics",
         "Environment :: Console",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3 :: Only",
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.7',
     entry_points={
         "console_scripts": [
             "exifdate2fs = exifdate2fs.__init__:main",
