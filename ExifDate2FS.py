@@ -10,12 +10,14 @@ if os.name == 'nt':
 
 __version__ = '0.8.0'
 
+
 def main():
     start_time = time.time()
     c = 0
     s = 0
     supported = ('.jpg', '.jpeg', '.tiff', '.webp', '.heic')
-    parser = argparse.ArgumentParser(description='This tool will recursively update image file timestamps to information from EXIF tag DateTimeOriginal.')
+    parser = argparse.ArgumentParser(description='This tool will recursively update image file timestamps to '
+                                                 'information from EXIF tag DateTimeOriginal.')
     parser.add_argument('directory', metavar='directory', type=str, help='Directory to start from')
     parser.add_argument('-v', '--verbose', help='show every file processed', action='store_true')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
