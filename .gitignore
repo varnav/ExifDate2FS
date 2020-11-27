@@ -130,3 +130,4 @@ dmypy.json
 
 # PyCharm
 .idea
+/exifdate2fs/__init__.py

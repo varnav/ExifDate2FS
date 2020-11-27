@@ -6,12 +6,12 @@ It will not modify files themselves, only filesystem timestamps. For Linux it wi
 
 ## Supported file formats (file extensions):
 
-* JPEG (jpg/jpeg)
+* JPEG (.jpg/.jpeg)
 * TIFF
 * WebP
-* HEIC
+* HEIF (.heic)
 
-Supports Windows, Linux, and probably other OSes.
+Supports Windows, Linux, MacOS and probably other OSes.
 
 ## Installation
 
@@ -19,16 +19,24 @@ Supports Windows, Linux, and probably other OSes.
 pip install exifdate2fs
 ```
 
-You can download and use it as single Windows binary, see "Releases" on the right.
+You can download and use it as single Windows binary, see [Releases](https://github.com/varnav/ExifDate2FS/releases/)
 
 ## Usage
+
+### PiPy package
 
 ```sh
 exifdate2fs [-h] [-v] directory
 ```
 
-or
+### Windows executable
 
 ```cmd
 ./ExifDate2FS.exe [-h] [-v] directory
 ```
+
+## See also
+
+* [Jhead](https://www.sentex.ca/~mwandel/jhead/)
+* [ExifTool](https://exiftool.org/)
+* [Exiv2](http://www.exiv2.org/)
