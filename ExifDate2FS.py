@@ -8,7 +8,7 @@ import pathlib
 if os.name == 'nt':
     from win32_setctime import setctime
 
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 
 def main():
@@ -20,6 +20,7 @@ def main():
                                                  'information from EXIF tag DateTimeOriginal.')
     parser.add_argument('directory', metavar='directory', type=str, help='Directory to start from')
     parser.add_argument('-v', '--verbose', help='show every file processed', action='store_true')
+    parser.add_argument('--rename', help='Rename file to IMG_DATE_TIME', action='store_true')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
     print('ExifDate2FS', __version__)
@@ -34,20 +35,34 @@ def main():
         sys.exit(1)
     for subdir, dirs, files in os.walk(directory):
         for filename in files:
-            filepath = subdir + os.sep + filename.lower()
-            if filepath.endswith(supported):
-                f = open(filepath, 'rb')
-                tags = exifread.process_file(f, details=False, stop_tag='DateTimeOriginal')
+            filepath = subdir + os.sep + filename
+            if filepath.lower().endswith(supported):
+                with open(filepath, 'rb') as f:
+                    tags = exifread.process_file(f, details=False, stop_tag='DateTimeOriginal')
                 if 'EXIF DateTimeOriginal' in tags.keys():
                     datetime_original = tags['EXIF DateTimeOriginal'].values
                     if args.verbose:
                         print(filepath, datetime_original)
                     if datetime_original != '0000:00:00 00:00:00':
-                        unix_time = float(time.mktime(time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')))
+                        time_object = time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
+                        unix_time = float(time.mktime(time_object))
                         os.utime(filepath, (time.time(), unix_time))
                         if os.name == 'nt':
                             # Set file creation date (Windows only)
                             setctime(filepath, unix_time)
+                        if args.rename:
+                            oldext = os.path.splitext(filepath)[1]
+                            newname = 'IMG_' + time.strftime('%Y%m%d_%H%M%S', time_object) + oldext
+                            if newname.lower() != os.path.basename(filepath).lower():
+                                newpath = subdir + os.sep + newname
+                                if not os.path.exists(newpath):
+                                    os.rename(filepath, newpath)
+                                    if args.verbose:
+                                        print("File renamed to", newname)
+                                else:
+                                    print(newname, " already exists")
+                            else:
+                                print("No need to rename")
                         c += 1
                     else:
                         print(filepath, 'EXIF DateTimeOriginal is zeroes')
