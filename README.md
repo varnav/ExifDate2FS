@@ -3,7 +3,8 @@
 This tool will recursively update file timestamps to information from EXIF tag DateTimeOriginal. It accepts one argument - filesystem path.
 It will not modify files themselves, only filesystem timestamps. For Linux it will modify mtime while for Windows it will also modify
 “Date Created”.
-Optionally you can rename file to IMG_YYYYMMDD_HHMMSS.jpg fith `--rename`
+
+Optionally you can rename file to IMG_YYYYMMDD_HHMMSS.jpg with `--rename`
 
 ## Supported file formats (file extensions):
 
@@ -22,18 +23,20 @@ pip install exifdate2fs
 
 You can download and use it as single Windows binary, see [Releases](https://github.com/varnav/ExifDate2FS/releases/)
 
+Unfortunately antiviruses [don't like packed Python executables](https://github.com/pyinstaller/pyinstaller/issues?q=is%3Aissue+virus+is%3Aclosed), so expect false positives from them if you go this way. Best way is pip.
+
 ## Usage
 
 ### PiPy package
 
 ```sh
-exifdate2fs [-h] /home/username/myphotos
+exifdate2fs /home/username/myphotos
 ```
 
 ### Windows executable
 
 ```cmd
-./ExifDate2FS.exe [-h] "c:\Users\username\Pictures\My Vacation"
+./ExifDate2FS.exe "c:\Users\username\Pictures\My Vacation"
 ```
 
 ## See also
