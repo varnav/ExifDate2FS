@@ -12,7 +12,7 @@ if os.name == 'nt':
 
 SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic']
 
-__version__ = '0.8.4'
+__version__ = '0.8.5'
 
 
 # Ported from: https://github.com/victordomingos/optimize-images
@@ -42,8 +42,10 @@ def main():
     parser = argparse.ArgumentParser(description='This tool will recursively update image file timestamps to '
                                                  'information from EXIF tag DateTimeOriginal.')
     parser.add_argument('directory', metavar='directory', type=str, help='Directory to start from')
-    parser.add_argument('-v', '--verbose', help='show every file processed', action='store_true')
+    parser.add_argument('-nr', '--no-recursion', action='store_true',
+                        help="Don't recurse through subdirectories.")
     parser.add_argument('--rename', help='Rename file to IMG_DATE_TIME (IMG_YYYYMMDD_HHMMSS)', action='store_true')
+    parser.add_argument('-v', '--verbose', help='show every file processed', action='store_true')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
     print('ExifDate2FS', __version__)
@@ -52,11 +54,16 @@ def main():
         directory = os.path.abspath(pathlib.PureWindowsPath(args.directory.rstrip("\"")))
     else:
         directory = os.path.abspath(pathlib.PurePosixPath(args.directory))
-    print('Processing recursively starting from', directory)
+    if args.no_recursion:
+        print('Processing non-recursively starting from', directory)
+        recursive = False
+    else:
+        print('Processing recursively starting from', directory)
+        recursive = True
     if not os.access(directory, os.W_OK):
         print('No such directory or not writable')
         sys.exit(1)
-    for filepath in search_images(str(directory), recursive=True):
+    for filepath in search_images(str(directory), recursive=recursive):
         with open(filepath, 'rb') as f:
             tags = exifread.process_file(f, details=False, stop_tag='DateTimeOriginal')
         if 'EXIF DateTimeOriginal' in tags.keys():
