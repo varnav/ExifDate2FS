@@ -10,11 +10,12 @@ import exifread
 if os.name == 'nt':
     from win32_setctime import setctime
 
-SUPPORTED_FORMATS = ['.jpg', '.jpeg', '.tif', '.tiff', '.webp', '.heic']
+SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic']
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 
+# Ported from: https://github.com/victordomingos/optimize-images
 def search_images(dirpath: str, recursive: bool) -> Iterable[str]:
     if recursive:
         for root, dirs, files in os.walk(dirpath):
