@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 import argparse
+import logging as log
 import os
 import pathlib
 import sys
@@ -7,12 +9,40 @@ from typing import Iterable
 
 import exifread
 
+import mp4.iso
+
 if os.name == 'nt':
     from win32_setctime import setctime
 
-SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic']
+SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'cr2', 'cr3']
 
-__version__ = '0.8.5'
+__version__ = '0.8.7'
+
+
+def update_fs(filepath, time_object):
+    unix_time = float(time.mktime(time_object))
+    os.utime(filepath, (time.time(), unix_time))
+    if os.name == 'nt':
+        # Set file creation date (Windows only)
+        setctime(filepath, unix_time)
+
+
+def rename_file(filepath, time_object):
+    oldext = os.path.splitext(filepath)[1]
+    newname = 'IMG_' + time.strftime('%Y%m%d_%H%M%S', time_object) + oldext
+    if newname.lower() != os.path.basename(filepath).lower():
+        newpath = pathlib.PurePath(os.path.dirname(filepath) + os.sep + newname)
+        if not os.path.exists(newpath):
+            try:
+                os.rename(filepath, newpath)
+                log.info("%s renamed to %s", filepath, newname)
+            except PermissionError:
+                log.error("Error renaming %s: %s is not writeable. ", str(filepath), newname)
+                print(sys.exc_info())
+        else:
+            print(newname, " already exists")
+    else:
+        log.info("No need to rename")
 
 
 # Ported from: https://github.com/victordomingos/optimize-images
@@ -49,6 +79,12 @@ def main():
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
     print('ExifDate2FS', __version__)
+
+    if args.verbose:
+        log.basicConfig(format='%(message)s', level='INFO')
+    else:
+        log.basicConfig(format='%(message)s')
+
     if os.name == 'nt':
         # We strip nasty mess if trailing slash and quotes used
         directory = os.path.abspath(pathlib.PureWindowsPath(args.directory.rstrip("\"")))
@@ -61,42 +97,37 @@ def main():
         print('Processing recursively starting from', directory)
         recursive = True
     if not os.access(directory, os.W_OK):
-        print('No such directory or not writable')
+        log.error('No such directory or not writable')
         sys.exit(1)
     for filepath in search_images(str(directory), recursive=recursive):
-        with open(filepath, 'rb') as f:
-            tags = exifread.process_file(f, details=False, stop_tag='DateTimeOriginal')
-        if 'EXIF DateTimeOriginal' in tags.keys():
-            datetime_original = tags['EXIF DateTimeOriginal'].values
-            if args.verbose:
-                print(filepath, datetime_original)
-            if datetime_original != '0000:00:00 00:00:00':
-                time_object = time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
-                unix_time = float(time.mktime(time_object))
-                os.utime(filepath, (time.time(), unix_time))
-                if os.name == 'nt':
-                    # Set file creation date (Windows only)
-                    setctime(filepath, unix_time)
-                if args.rename:
-                    oldext = os.path.splitext(filepath)[1]
-                    newname = 'IMG_' + time.strftime('%Y%m%d_%H%M%S', time_object) + oldext
-                    if newname.lower() != os.path.basename(filepath).lower():
-                        newpath = os.path.dirname(filepath) + os.sep + newname
-                        if not os.path.exists(newpath):
-                            os.rename(filepath, newpath)
-                            if args.verbose:
-                                print("File renamed to", newname)
-                        else:
-                            print(newname, " already exists")
-                    else:
-                        print("No need to rename")
-                c += 1
-            else:
-                print(filepath, 'EXIF DateTimeOriginal is zeroes')
-                s += 1
+        filepath = pathlib.PurePath(filepath)
+        extension = os.path.splitext(filepath)[1]
+        if extension.lower() == '.cr3':
+            with mp4.iso.Mp4File(filepath) as cr3_object:
+                datetime_original = cr3_object.child_boxes[1].child_boxes[1].box_info['creation_time']
+            time_object = time.strptime(datetime_original, '%Y-%m-%d %H:%M:%S')
+            update_fs(filepath, time_object)
+            if args.rename:
+                rename_file(filepath, time_object)
+            log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
+            c += 1
         else:
-            print(filepath, 'no EXIF DateTimeOriginal')
-            s += 1
+            with open(filepath, 'rb') as f:
+                tags = exifread.process_file(f, details=False, stop_tag='DateTimeOriginal')
+            if 'EXIF DateTimeOriginal' in tags.keys():
+                datetime_original = tags['EXIF DateTimeOriginal'].values
+                if datetime_original != '0000:00:00 00:00:00':
+                    time_object = time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
+                    update_fs(filepath, time_object)
+                    log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
+                    if args.rename:
+                        rename_file(filepath, time_object)
+                    c += 1
+                else:
+                    log.error(str(filepath), '%s EXIF DateTimeOriginal is zeroes')
+                    s += 1
+            else:
+                log.warning("%s no EXIF DateTimeOriginal", str(filepath))
 
     print(c, 'files processed', s, 'skipped', 'in', (time.time() - start_time))
 
