@@ -11,7 +11,8 @@ Optionally you can rename file to IMG_YYYYMMDD_HHMMSS.jpg with `--rename`
 * JPEG (.jpg .jpeg)
 * TIFF (.tif .tiff)
 * WebP
-* HEIC (.heic)
+* HEIF/HEIC (.heic)
+* CR2 (.cr2)
 
 Supports Windows, Linux, MacOS and probably other OSes.
 

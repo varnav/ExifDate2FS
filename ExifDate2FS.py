@@ -10,9 +10,9 @@ import exifread
 if os.name == 'nt':
     from win32_setctime import setctime
 
-SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic']
+SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'cr2']
 
-__version__ = '0.8.5'
+__version__ = '0.8.6'
 
 
 # Ported from: https://github.com/victordomingos/optimize-images
