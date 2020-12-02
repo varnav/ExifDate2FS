@@ -14,7 +14,7 @@ import mp4.iso
 if os.name == 'nt':
     from win32_setctime import setctime
 
-SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'cr2', 'cr3']
+SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'heif', 'cr2', 'cr3']
 
 __version__ = '0.8.7'
 
@@ -35,7 +35,7 @@ def rename_file(filepath, time_object):
         if not os.path.exists(newpath):
             try:
                 os.rename(filepath, newpath)
-                log.info("%s renamed to %s", filepath, newname)
+                log.info("%s renamed to %s", str(filepath), newname)
             except PermissionError:
                 log.error("Error renaming %s: %s is not writeable. ", str(filepath), newname)
                 print(sys.exc_info())
@@ -103,32 +103,38 @@ def main():
         filepath = pathlib.PurePath(filepath)
         extension = os.path.splitext(filepath)[1]
         if extension.lower() == '.cr3':
-            with mp4.iso.Mp4File(filepath) as cr3_object:
+            try:
+                cr3_object = mp4.iso.Mp4File(filepath)
                 datetime_original = cr3_object.child_boxes[1].child_boxes[1].box_info['creation_time']
-            time_object = time.strptime(datetime_original, '%Y-%m-%d %H:%M:%S')
-            update_fs(filepath, time_object)
-            if args.rename:
-                rename_file(filepath, time_object)
-            log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
-            c += 1
+                time_object = time.strptime(datetime_original, '%Y-%m-%d %H:%M:%S')
+                datetime_original = None
+                update_fs(filepath, time_object)
+                if args.rename:
+                    rename_file(filepath, time_object)
+                log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
+                c += 1
+            except Exception as e:
+                log.warning("%s CR3 processing error: %s", str(filepath), e)
         else:
-            with open(filepath, 'rb') as f:
-                tags = exifread.process_file(f, details=False, stop_tag='DateTimeOriginal')
-            if 'EXIF DateTimeOriginal' in tags.keys():
-                datetime_original = tags['EXIF DateTimeOriginal'].values
-                if datetime_original != '0000:00:00 00:00:00':
-                    time_object = time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
-                    update_fs(filepath, time_object)
-                    log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
-                    if args.rename:
-                        rename_file(filepath, time_object)
-                    c += 1
+            try:
+                with open(filepath, 'rb') as f:
+                    tags = exifread.process_file(f, details=False)
+                if 'EXIF DateTimeOriginal' in tags.keys():
+                    datetime_original = tags['EXIF DateTimeOriginal'].values
+                    if datetime_original != '0000:00:00 00:00:00':
+                        time_object = time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
+                        update_fs(filepath, time_object)
+                        log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
+                        if args.rename:
+                            rename_file(filepath, time_object)
+                        c += 1
+                    else:
+                        log.error(str(filepath), '%s EXIF DateTimeOriginal is zeroes')
+                        s += 1
                 else:
-                    log.error(str(filepath), '%s EXIF DateTimeOriginal is zeroes')
-                    s += 1
-            else:
-                log.warning("%s no EXIF DateTimeOriginal", str(filepath))
-
+                    log.warning("%s no EXIF DateTimeOriginal", str(filepath))
+            except Exception as e:
+                log.warning("%s processing error: %s", str(filepath), e)
     print(c, 'files processed', s, 'skipped', 'in', (time.time() - start_time))
 
 

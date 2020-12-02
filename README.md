@@ -11,7 +11,7 @@ Optionally you can rename file to IMG_YYYYMMDD_HHMMSS.jpg with `--rename`
 * JPEG (.jpg .jpeg)
 * TIFF (.tif .tiff)
 * WebP
-* HEIC (.heic)
+* HEIC/HEIF (.heic, .heif) - experimental
 * CR2 (.cr2)
 * CR3 (.cr3) - experimental via [mp4analyser](https://github.com/essential61/mp4analyser) library
 
