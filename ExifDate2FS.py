@@ -112,9 +112,9 @@ def main():
 
     if os.name == 'nt':
         # We strip nasty mess if trailing slash and quotes used
-        directory = os.path.abspath(pathlib.PureWindowsPath(args.directory.rstrip("\"")))
+        directory = os.path.abspath(args.directory.rstrip("\""))
     else:
-        directory = os.path.abspath(pathlib.PurePosixPath(args.directory))
+        directory = os.path.abspath(args.directory)
     if args.no_recursion:
         print('Processing non-recursively starting from', directory)
         recursive = False
