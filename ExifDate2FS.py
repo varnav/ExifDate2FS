@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import logging as log
 import os
 import pathlib
@@ -19,6 +20,21 @@ SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'heif', 'cr2'
 __version__ = '0.8.7'
 
 
+def issame(filepath1, filepath2):
+    hasher1 = hashlib.sha3_256()
+    hasher2 = hashlib.sha3_256()
+    with open(filepath1, 'rb') as afile:
+        buf = afile.read()
+        hasher1.update(buf)
+    with open(filepath2, 'rb') as afile:
+        buf = afile.read()
+        hasher2.update(buf)
+    if hasher1.hexdigest() == hasher2.hexdigest():
+        return True
+    else:
+        return False
+
+
 def update_fs(filepath, time_object):
     unix_time = float(time.mktime(time_object))
     os.utime(filepath, (time.time(), unix_time))
@@ -27,20 +43,28 @@ def update_fs(filepath, time_object):
         setctime(filepath, unix_time)
 
 
-def rename_file(filepath, time_object):
+def rename_file(filepath, time_object, dedup=False):
     oldext = os.path.splitext(filepath)[1]
     newname = 'IMG_' + time.strftime('%Y%m%d_%H%M%S', time_object) + oldext
     if newname.lower() != os.path.basename(filepath).lower():
         newpath = pathlib.PurePath(os.path.dirname(filepath) + os.sep + newname)
-        if not os.path.exists(newpath):
+        if not os.path.exists(newpath) and not dedup:
             try:
                 os.rename(filepath, newpath)
                 log.info("%s renamed to %s", str(filepath), newname)
             except PermissionError:
                 log.error("Error renaming %s: %s is not writeable. ", str(filepath), newname)
                 print(sys.exc_info())
+        elif os.path.exists(newpath) and dedup and issame(filepath, newpath):
+            try:
+                os.replace(filepath, newpath)
+                log.info("%s renamed to %s with overwrite (dedup)", str(filepath), newname)
+            except PermissionError:
+                log.error("Error renaming %s: %s is not writeable. ", str(filepath), newname)
+                print(sys.exc_info())
         else:
             print(newname, " already exists")
+
     else:
         log.info("No need to rename")
 
@@ -75,6 +99,7 @@ def main():
     parser.add_argument('-nr', '--no-recursion', action='store_true',
                         help="Don't recurse through subdirectories.")
     parser.add_argument('--rename', help='Rename file to IMG_DATE_TIME (IMG_YYYYMMDD_HHMMSS)', action='store_true')
+    parser.add_argument('-d', '--dedup', help='Allow overwrite if file is the same (checksum)', action='store_true')
     parser.add_argument('-v', '--verbose', help='show every file processed', action='store_true')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
@@ -96,7 +121,7 @@ def main():
     else:
         print('Processing recursively starting from', directory)
         recursive = True
-    if not os.access(directory, os.W_OK):
+    if not os.access(directory, os.W_OK) or not os.path.exists(directory):
         log.error('No such directory or not writable')
         sys.exit(1)
     for filepath in search_images(str(directory), recursive=recursive):
@@ -107,10 +132,9 @@ def main():
                 cr3_object = mp4.iso.Mp4File(filepath)
                 datetime_original = cr3_object.child_boxes[1].child_boxes[1].box_info['creation_time']
                 time_object = time.strptime(datetime_original, '%Y-%m-%d %H:%M:%S')
-                datetime_original = None
                 update_fs(filepath, time_object)
                 if args.rename:
-                    rename_file(filepath, time_object)
+                    rename_file(filepath, time_object, dedup=args.dedup)
                 log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
                 c += 1
             except Exception as e:
@@ -126,7 +150,7 @@ def main():
                         update_fs(filepath, time_object)
                         log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
                         if args.rename:
-                            rename_file(filepath, time_object)
+                            rename_file(filepath, time_object, dedup=args.dedup)
                         c += 1
                     else:
                         log.error(str(filepath), '%s EXIF DateTimeOriginal is zeroes')
