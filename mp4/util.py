@@ -53,5 +53,3 @@ def read_i8_8(fp):
     ipart = struct.unpack('>b', fp.read(1))[0]
     fpart = struct.unpack('B', fp.read(1))[0]
     return ipart + (fpart / 256)
-
-

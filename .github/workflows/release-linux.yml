@@ -30,8 +30,7 @@ jobs:
 
     - name: Lint with flake8
       run:  |
-        flake8 . --count --max-line-length=127 --statistics
-        flake8 . --max-complexity 10
+        flake8 ExifDate2FS.py --ignore=F405 --count --max-line-length=127 --statistics
 
     - name: Build package
       run: python setup.py sdist bdist_wheel
