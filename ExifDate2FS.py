@@ -48,7 +48,7 @@ def rename_file(filepath, time_object, dedup=False):
     newname = 'IMG_' + time.strftime('%Y%m%d_%H%M%S', time_object) + oldext
     if newname.lower() != os.path.basename(filepath).lower():
         newpath = pathlib.PurePath(os.path.dirname(filepath) + os.sep + newname)
-        if not os.path.exists(newpath) and not dedup:
+        if not os.path.exists(newpath):
             try:
                 os.rename(filepath, newpath)
                 log.info("%s renamed to %s", str(filepath), newname)
