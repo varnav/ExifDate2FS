@@ -17,7 +17,7 @@ if os.name == 'nt':
 
 SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'heif', 'cr2', 'cr3']
 
-__version__ = '0.8.7'
+__version__ = '0.8.8'
 
 
 def issame(filepath1, filepath2):
@@ -131,12 +131,15 @@ def main():
             try:
                 cr3_object = mp4.iso.Mp4File(filepath)
                 datetime_original = cr3_object.child_boxes[1].child_boxes[1].box_info['creation_time']
-                time_object = time.strptime(datetime_original, '%Y-%m-%d %H:%M:%S')
-                update_fs(filepath, time_object)
-                if args.rename:
-                    rename_file(filepath, time_object, dedup=args.dedup)
-                log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
-                c += 1
+                try:
+                    time_object = time.strptime(datetime_original, '%Y-%m-%d %H:%M:%S')
+                    update_fs(filepath, time_object)
+                    if args.rename:
+                        rename_file(filepath, time_object, dedup=args.dedup)
+                    log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
+                    c += 1
+                except ValueError as e:
+                    log.warning("%s CR3 EXIF date processing error: %s", str(filepath), e)
             except Exception as e:
                 log.warning("%s CR3 processing error: %s", str(filepath), e)
         else:
@@ -145,15 +148,15 @@ def main():
                     tags = exifread.process_file(f, details=False)
                 if 'EXIF DateTimeOriginal' in tags.keys():
                     datetime_original = tags['EXIF DateTimeOriginal'].values
-                    if datetime_original != '0000:00:00 00:00:00':
+                    try:
                         time_object = time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
                         update_fs(filepath, time_object)
                         log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
                         if args.rename:
                             rename_file(filepath, time_object, dedup=args.dedup)
                         c += 1
-                    else:
-                        log.error(str(filepath), '%s EXIF DateTimeOriginal is zeroes')
+                    except ValueError:
+                        log.error(str(filepath), '%s EXIF DateTimeOriginal is corrupt')
                         s += 1
                 else:
                     log.warning("%s no EXIF DateTimeOriginal", str(filepath))
