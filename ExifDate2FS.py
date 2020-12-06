@@ -17,7 +17,7 @@ if os.name == 'nt':
 
 SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'heif', 'cr2', 'cr3']
 
-__version__ = '0.8.8'
+__version__ = '0.8.10.dev2'
 
 
 def issame(filepath1, filepath2):
@@ -139,9 +139,9 @@ def main():
                     log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
                     c += 1
                 except ValueError as e:
-                    log.warning("%s CR3 EXIF date processing error: %s", str(filepath), e)
+                    log.warning("%s CR3 EXIF date processing error: %s".format(str(filepath), str(e)))
             except Exception as e:
-                log.warning("%s CR3 processing error: %s", str(filepath), e)
+                log.warning("%s CR3 processing error: %s", str(filepath), str(e))
         else:
             try:
                 with open(filepath, 'rb') as f:
@@ -155,8 +155,8 @@ def main():
                         if args.rename:
                             rename_file(filepath, time_object, dedup=args.dedup)
                         c += 1
-                    except ValueError:
-                        log.error(str(filepath), '%s EXIF DateTimeOriginal is corrupt')
+                    except ValueError as e:
+                        log.warning("%s EXIF date processing error: %s", str(filepath), str(e))
                         s += 1
                 else:
                     log.warning("%s no EXIF DateTimeOriginal", str(filepath))
