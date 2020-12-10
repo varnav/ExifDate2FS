@@ -15,10 +15,13 @@ if os.name == 'nt':
 
 SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'heif', 'cr2']
 
-__version__ = '0.8.10dev3'
+__version__ = '0.8.10dev4'
 
 
 def issame(filepath1, filepath2):
+    if os.path.getsize(filepath1) != os.path.getsize(filepath2):
+        # Sizes dont' match, obviously not same
+        return False
     hasher1 = hashlib.sha3_256()
     hasher2 = hashlib.sha3_256()
     with open(filepath1, 'rb') as afile:
@@ -135,6 +138,9 @@ def main():
                 if 'EXIF DateTimeOriginal' in tags.keys():
                     datetime_original = tags['EXIF DateTimeOriginal'].values
                     try:
+                        # Fix weird varians of EXIFs. Thanks to:
+                        # https://github.com/TheLastGimbus/GooglePhotosTakeoutHelper/
+                        datetime_original = datetime_original.replace('-', ':').replace('/', ':').replace('.', ':').replace('\\', ':').replace(': ', ':0')[:19]
                         time_object = time.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
                         update_fs(filepath, time_object)
                         log.info("%s %s", str(filepath), time.strftime("%Y-%m-%d %H:%M:%S", time_object))
