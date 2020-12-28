@@ -1,7 +1,7 @@
 # ExifDate2FS
 
 This tool will recursively update file timestamps to information from EXIF tag DateTimeOriginal. It accepts one argument - filesystem path.
-It will not modify files themselves, only filesystem timestamps. For Linux it will modify mtime while for Windows it will also modify
+It will not modify files themselves, only filesystem timestamps. For Linux, it will modify mtime while for Windows it will also modify
 “Date Created”.
 
 Optionally you can rename file to IMG_YYYYMMDD_HHMMSS.jpg with `--rename`
@@ -15,7 +15,7 @@ Optionally you can rename file to IMG_YYYYMMDD_HHMMSS.jpg with `--rename`
 * CR2 (.cr2)
 * CR3 (.cr3) - experimental via [mp4analyser](https://github.com/essential61/mp4analyser) library
 
-Supports Windows, Linux, MacOS and probably other OSes.
+Supports Windows, Linux, macOS and probably other OSes.
 
 ## Installation
 
