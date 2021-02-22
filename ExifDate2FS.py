@@ -15,7 +15,7 @@ if os.name == 'nt':
 
 SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'heif', 'cr2']
 
-__version__ = '0.8.10dev4'
+__version__ = '0.8.12'
 
 
 def issame(filepath1, filepath2):
@@ -64,7 +64,7 @@ def rename_file(filepath, time_object, dedup=False):
                 log.error("Error renaming %s: %s is not writeable. ", str(filepath), newname)
                 print(sys.exc_info())
         else:
-            print(newname, " already exists")
+            print(newname, "already exists")
 
     else:
         log.info("No need to rename")
@@ -93,7 +93,6 @@ def search_images(dirpath: str, recursive: bool) -> Iterable[str]:
 def main():
     start_time = time.time()
     c = 0
-    s = 0
     parser = argparse.ArgumentParser(description='This tool will recursively update image file timestamps to '
                                                  'information from EXIF tag DateTimeOriginal.')
     parser.add_argument('directory', metavar='directory', type=str, help='Directory to start from')
@@ -101,7 +100,7 @@ def main():
                         help="Don't recurse through subdirectories.")
     parser.add_argument('--rename', help='Rename file to IMG_DATE_TIME (IMG_YYYYMMDD_HHMMSS)', action='store_true')
     parser.add_argument('-d', '--dedup', help='Allow overwrite if file is the same (checksum)', action='store_true')
-    parser.add_argument('-v', '--verbose', help='show every file processed', action='store_true')
+    parser.add_argument('-v', '--verbose', help='Show every file processed', action='store_true')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
     print('ExifDate2FS', __version__)
@@ -128,7 +127,7 @@ def main():
     for filepath in search_images(str(directory), recursive=recursive):
         filepath = pathlib.PurePath(filepath)
         extension = os.path.splitext(filepath)[1]
-        if extension.lower() == '.cr3':
+        if extension.lower() in ['.cr3', '.jxl']:
             # Reserved for special processing of special extensions
             pass
         else:
@@ -149,12 +148,11 @@ def main():
                         c += 1
                     except ValueError as e:
                         log.warning("%s EXIF date processing error: %s", str(filepath), str(e))
-                        s += 1
                 else:
                     log.warning("%s no EXIF DateTimeOriginal", str(filepath))
             except Exception as e:
                 log.warning("%s processing error: %s", str(filepath), e)
-    print(c, 'files processed', s, 'skipped', 'in', (time.time() - start_time))
+    print(c, 'files processed in', (time.time() - start_time))
 
 
 if __name__ == '__main__':
