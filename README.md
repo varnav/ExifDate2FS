@@ -45,3 +45,5 @@ exifdate2fs /home/username/myphotos
 * [Jhead](https://www.sentex.ca/~mwandel/jhead/)
 * [ExifTool](https://exiftool.org/)
 * [Exiv2](http://www.exiv2.org/)
+* [NameEXIF](https://us.digicamsoft.com/softnamexif.html)
+* [EXIF Date Changer](https://www.relliksoftware.com/exifdatechanger/)
