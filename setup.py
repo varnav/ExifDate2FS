@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 install_requires = [
-    'exifread>=2',
+    'exifread<3',
     'win32-setctime ; platform_system=="Windows"'
 ]
 

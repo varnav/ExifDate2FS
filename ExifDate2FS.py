@@ -15,7 +15,7 @@ if os.name == 'nt':
 
 SUPPORTED_FORMATS = ['jpg', 'jpeg', 'tif', 'tiff', 'webp', 'heic', 'heif', 'cr2']
 
-__version__ = '0.8.12'
+__version__ = '0.8.14'
 
 
 def issame(filepath1, filepath2):
